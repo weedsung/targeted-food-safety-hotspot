@@ -40,3 +40,4 @@ output/pdf/*preview*.png
 .DS_Store
 Thumbs.db
 .vscode/
+.obsidian/
