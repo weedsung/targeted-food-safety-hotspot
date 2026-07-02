@@ -1,0 +1,2 @@
+Rows_Used,Months_Used,Sidos_Used,Hotspot_Threshold_Per_1000_Restaurants,Target_0_Count,Target_1_Count,LightGBM_Accuracy,LightGBM_AUC
+391,23,17,0.1726817475392851,311,80,0.759493670886076,0.5365275142314991

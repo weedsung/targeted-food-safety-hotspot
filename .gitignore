@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local caches
+scratch/
+.pytest_cache/
+.mypy_cache/
+
+# Raw and row-level data are excluded from the public repository.
+# They may contain large public-use microdata or fields that should be
+# re-downloaded from the original providers before reproduction.
+data/raw/
+data/processed/*.csv
+!data/processed/README.md
+
+# Personal/reference attachments
+docs/references/
+docs/mdis_layouts/
+docs/ai_logs/
+docs/competition_application_submitted.md
+
+# Superseded narrative drafts kept locally for traceability
+docs/analysis_results.md
+docs/poster_statistical_summary.md
+
+# Notebook outputs may embed stale data snapshots.
+notebooks/
+
+# Binary model objects
+output/models/*.pkl
+
+# Keep model summary tables, charts, dashboard prototype, and final poster.
+!output/models/*.csv
+output/pdf/*preview*.png
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>식품 안전 타겟팅 관제상황실</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="pulse-icon">🚨</span>
+                <h2>FOOD SAFETY</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li class="nav-item active" data-target="status">전술 상황판</li>
+                    <li class="nav-item" data-target="map">지역별 위험도</li>
+                    <li class="nav-item" data-target="economy">경제지표 분석</li>
+                </ul>
+            </nav>
+
+            <!-- Simulation Controls (From Python Dashboard) -->
+            <div class="control-panel">
+                <h4>🛠️ 시뮬레이션 설정</h4>
+                <div class="control-group">
+                    <label>물가 상승 압박 (+<span id="cpiVal">0</span>%)</label>
+                    <input type="range" id="cpiSlider" min="0" max="10" value="0" step="0.5">
+                </div>
+                <div class="control-group">
+                    <label>기후 불쾌지수 가중치</label>
+                    <input type="range" id="thiSlider" min="0" max="5" value="0" step="0.5">
+                </div>
+                <p class="prediction-text">AI 예측: <span id="riskLevel" class="safe">안전</span></p>
+            </div>
+
+            <div class="alert-box">
+                <h4>⚠️ 위기 경보</h4>
+                <p>소비자 물가 1.33배 상승 시 위반 핫스팟 확률 급증</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1>전술 관제 대시보드 <span class="badge">LIVE</span></h1>
+                <div class="user-info">관리자 모드 | 2026-05-06</div>
+            </header>
+
+            <!-- Stats Grid -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>총 관제 지역</h3>
+                    <div class="value">17개 시도</div>
+                    <div class="trend up">전국망 가동 중</div>
+                </div>
+                <div class="stat-card">
+                    <h3>AI 예측 위험도</h3>
+                    <div class="value">CRITICAL</div>
+                    <div class="trend up">물가 변동 주의</div>
+                </div>
+                <div class="stat-card">
+                    <h3>위반율 핫스팟</h3>
+                    <div class="value">상위 20%</div>
+                    <div class="trend">타겟팅 활성</div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container main-chart">
+                    <h3>📈 물가 상승 대비 위반율 동기화 트렌드</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="chart-container side-chart">
+                    <h3>🗺️ 지역별 위험 지수 (Top 5)</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Real-time Alert Feed (From AI Mockup) -->
+            <section class="alert-feed">
+                <h3>🔔 실시간 AI 분석 피드</h3>
+                <div class="log-container" id="alertLog">
+                    <div class="log-item">[시스템] 관제 시스템 가동 중...</div>
+                    <div class="log-item">[분석] 전국 식당 밀집도 베이스라인 업데이트 완료</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

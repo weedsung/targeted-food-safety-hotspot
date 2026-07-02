@@ -1,0 +1,5 @@
+Feature,Category,Correlation_with_CPI_TOTAL,Correlation_with_Violations,OddsRatio,P_Value,LightGBM_Split_Count,Conclusion_Summary
+THI,Climate Pressure,-0.41644655728259056,-0.04234847905638969,0.764286789246702,0.06169910412252544,185,Negative association under restaurant-normalized hotspot target
+CPI_AGRI,Economic Pressure,0.722716754609832,-0.10276331555416036,0.6188024441003303,0.01315705182276794,258,Significant but interpreted cautiously due to CPI multicollinearity
+CPI_TOTAL,Economic Pressure,1.0,0.0014561209348085157,1.3877834116130556,0.08995531944476176,142,Positive hotspot-risk signal after density control
+RESTAURANT_DENSITY,Spatial Baseline,1.9890209808596645e-16,0.42170437260172283,1.0031666052322836,0.9800925300376044,523,High count correlation but no direct hotspot-rate effect
