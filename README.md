@@ -9,8 +9,11 @@
 - Final poster PDF: `output/pdf/food_safety_statistical_poster.pdf`
 - Full data analysis report: `docs/data_analysis_report.md`
 - Defensible poster wording: `docs/poster_defensible_storyline.md`
+- Statistical feedback triage: `docs/statistical_feedback_triage.md`
 - Data reliability audit: `docs/data_reliability_audit.md`
 - Before/after model comparison: `output/models/model_comparison_before_after.csv`
+- Sensitivity checks: `output/models/sensitivity_analysis.csv`
+- ML baseline metrics: `output/models/ml_baseline_metrics.csv`
 - Model summary: `output/models/model_training_summary.csv`
 
 ## Current Statistical Summary
@@ -24,7 +27,7 @@ After fixing path handling and region normalization:
 | `RESTAURANT_DENSITY` | 1.00 | 0.980 | No direct effect on hotspot rate after normalization |
 | `CPI_AGRI` | 0.62 | 0.013 | Significant but interpreted cautiously due to CPI multicollinearity |
 
-LightGBM validation AUC is 0.537. Therefore, the model is presented as a targeting support prototype, not as a high-performance automated decision model.
+Sensitivity checks show that the CPI signal is exploratory rather than stable causal evidence. LightGBM validation AUC is 0.537, and majority-class baseline accuracy is higher than LightGBM accuracy. Therefore, the model is presented as a targeting support prototype, not as a high-performance automated decision model.
 
 ## Reproduction
 
