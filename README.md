@@ -7,6 +7,7 @@
 ## Key Outputs
 
 - Final poster PDF: `output/pdf/food_safety_statistical_poster.pdf`
+- Full data analysis report: `docs/data_analysis_report.md`
 - Defensible poster wording: `docs/poster_defensible_storyline.md`
 - Data reliability audit: `docs/data_reliability_audit.md`
 - Before/after model comparison: `output/models/model_comparison_before_after.csv`
