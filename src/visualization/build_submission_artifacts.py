@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
@@ -329,146 +329,190 @@ def draw_metric(c, x, y, w, h, label, value, note, accent):
 
 def build_a1_poster_pdf():
     summary, odds, priority, sens = load_stats()
-    a1_landscape = landscape((594 * mm, 841 * mm))
-    width, height = a1_landscape
+    width, height = (594 * mm, 841 * mm)
     c = canvas.Canvas(str(POSTER_PDF), pagesize=(width, height))
-    margin = 24 * mm
+    margin = 18 * mm
 
-    c.setFillColor(colors.HexColor("#F8FAFC"))
+    c.setFillColor(colors.HexColor("#FFFFFF"))
     c.rect(0, 0, width, height, fill=1, stroke=0)
-    c.setFillColor(colors.HexColor("#0F172A"))
-    c.setFont(FONT_BOLD, 46)
-    c.drawString(margin, height - margin - 12, "물가가 오르면 동네 식당의 위생도 흔들릴까?")
-    c.setFont(FONT, 18)
-    c.setFillColor(colors.HexColor("#475569"))
-    c.drawString(margin, height - margin - 42, "경제·기후·상권 데이터 기반 식품접객업 행정처분 취약 신호 탐지와 점검 우선순위 지수")
 
-    metric_y = height - margin - 135
-    metric_w = (width - 2 * margin - 3 * 18) / 4
+    red = colors.HexColor("#B91C1C")
+    dark = colors.HexColor("#1F2937")
+    muted = colors.HexColor("#6B7280")
+    line = colors.HexColor("#9CA3AF")
+
+    # Header
+    header_h = 92 * mm
+    c.setFillColor(colors.HexColor("#0F172A"))
+    c.setFont(FONT_BOLD, 37)
+    c.drawString(margin, height - margin - 8, "물가가 오르면 동네 식당의")
+    c.setFillColor(red)
+    c.setFont(FONT_BOLD, 45)
+    c.drawString(margin, height - margin - 48, "위생도 흔들릴까?")
+    c.setFillColor(dark)
+    c.setFont(FONT_BOLD, 19)
+    c.drawString(margin, height - margin - 78, ": 경제·기후·상권 기반 식품위생 점검 우선순위 분석")
+
+    banner_w = 150 * mm
+    c.setFillColor(red)
+    c.rect(width - margin - banner_w, height - header_h, banner_w + margin, header_h, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    for i, (label, symbol) in enumerate([("운영비 압박", "₩"), ("사전점검", "!")]):
+        cx = width - margin - banner_w + 42 * mm + i * 58 * mm
+        cy = height - 38 * mm
+        c.circle(cx, cy, 17 * mm, fill=1, stroke=0)
+        c.setFillColor(red)
+        c.setFont(FONT_BOLD, 25)
+        c.drawCentredString(cx, cy - 8, symbol)
+        c.setFillColor(colors.white)
+        c.setFont(FONT_BOLD, 12)
+        c.drawCentredString(cx, cy - 29 * mm, label)
+    c.setStrokeColor(colors.HexColor("#E5E7EB"))
+    c.setLineWidth(2)
+    c.line(0, height - header_h, width, height - header_h)
+
+    # Metrics
+    metric_y = height - header_h - 40 * mm
+    metric_w = (width - 2 * margin - 3 * 8 * mm) / 4
     metrics = [
-        ("정제 행정처분", "2,901건", "식품접객업 필터링", "#DC2626"),
+        ("정제 행정처분", "2,901건", "식품접객업 필터링", "#B91C1C"),
         ("분석 격자", f"{int(summary['Rows_Used'])}개", "17시도 x 23개월", "#2563EB"),
-        ("핫스팟 기준", "Top 20%", f"임계값 {summary['Hotspot_Threshold_Per_1000_Restaurants']:.3f}건", "#7C3AED"),
-        ("LightGBM AUC", f"{summary['LightGBM_AUC']:.3f}", "핵심 주장은 FSIPI", "#475569"),
+        ("핫스팟", "Top 20%", "식당 1,000개당 발생률", "#7C3AED"),
+        ("FSIPI", "4요소", "발생률·추세·경제·반복", "#059669"),
     ]
     for i, m in enumerate(metrics):
-        draw_metric(c, margin + i * (metric_w + 18), metric_y, metric_w, 76, *m)
+        draw_metric(c, margin + i * (metric_w + 8 * mm), metric_y, metric_w, 28 * mm, *m)
 
-    gap = 18
-    col_w = (width - 2 * margin - 2 * gap) / 3
-    top_y = 820
-    bottom_y = 150
-    section_h = 600
+    def label_bar(y, title):
+        c.setFillColor(red)
+        c.setFont(FONT_BOLD, 22)
+        c.drawString(margin, y, title)
+        c.setStrokeColor(line)
+        c.setLineWidth(1.2)
+        c.line(margin, y - 7, width - margin, y - 7)
 
-    card(c, margin, top_y, col_w, section_h, "1. 왜 절대 건수가 아닌가")
+    # Section 1: background and data
+    y1 = metric_y - 30 * mm
+    label_bar(y1, "분석 배경 및 데이터")
+    panel_y = y1 - 128 * mm
+    left_w = (width - 2 * margin) * 0.47
+    right_w = width - 2 * margin - left_w - 12 * mm
+    card(c, margin, panel_y, left_w, 112 * mm, None, "#F9FAFB")
+    c.setFont(FONT_BOLD, 16)
+    c.setFillColor(dark)
+    c.drawString(margin + 10, panel_y + 96 * mm, "외식업 경영 부담 증가에 따른 식품위생 취약 가능성")
     para(
         c,
-        "음식점 수가 많은 지역은 행정처분 건수도 구조적으로 커질 수 있다. 따라서 본 분석은 식당 1,000개당 행정처분 발생률로 보정하고, 상위 20% 시도-월을 점검 우선 후보로 정의하였다.",
-        margin + 18,
-        top_y + 390,
-        col_w - 36,
-        72,
-        size=17,
-        leading=23,
+        "최근 식재료비, 인건비, 임대료, 공공요금 상승으로 음식점의 운영비 부담이 지속적으로 증가하고 있다. 제한된 매출 안에서 식재료 구매, 인력 유지, 시설 관리, 위생관리 비용을 동시에 부담해야 하므로 경제적 압박과 행정처분 취약 신호를 함께 볼 필요가 있다.<br/><br/>기존 단속은 절대 행정처분 건수가 많은 지역에 집중되기 쉽다. 그러나 음식점 수가 많은 대도시는 건수도 구조적으로 커지므로, 식당 1,000개당 행정처분 발생률로 보정하였다.",
+        margin + 10,
+        panel_y + 16 * mm,
+        left_w - 20,
+        72 * mm,
+        size=12.5,
+        leading=17,
+    )
+    table(
+        c,
+        [
+            ["영역", "데이터", "역할"],
+            ["위생", "식품안전나라 행정처분", "종속변수"],
+            ["경제", "KOSIS 소비자물가지수", "운영비 압박"],
+            ["기후", "기상청 ASOS", "기후주의 플래그"],
+            ["상권", "MDIS 전국사업체조사", "음식점 수 보정"],
+        ],
+        margin + left_w + 12 * mm,
+        panel_y + 42 * mm,
+        [38 * mm, 78 * mm, right_w - 116 * mm],
+        font_size=10.5,
+    )
+    para(c, "17개 시도 x 23개월 = 391개 시도-월 관측치, 식품접객업 행정처분 2,901건 분석", margin + left_w + 12 * mm, panel_y + 22 * mm, right_w, 18 * mm, size=12, color="#374151")
+
+    # Section 2: analysis
+    y2 = panel_y - 28 * mm
+    label_bar(y2, "데이터 분석")
+    row_y = y2 - 138 * mm
+    col_gap = 8 * mm
+    col_w = (width - 2 * margin - 2 * col_gap) / 3
+    card(c, margin, row_y, col_w, 120 * mm, "1. 규모 착시 확인", "#FFFFFF")
+    para(
+        c,
+        "음식점업 사업체 수는 절대 행정처분 건수와 상관이 있었지만, 보정 발생률과는 거의 관련이 없었다.",
+        margin + 12,
+        row_y + 78 * mm,
+        col_w - 24,
+        30 * mm,
+        size=11.5,
+        leading=15,
     )
     table(
         c,
         [
             ["확인 항목", "결과"],
-            ["사업체 수 vs 절대 건수", "r = 0.422"],
-            ["사업체 수 vs 보정 발생률", "r = -0.022"],
-            ["사업체 수 로지스틱 효과", "OR = 1.00, p = 0.980"],
+            ["사업체 수 vs 절대 건수", "r=0.422"],
+            ["사업체 수 vs 보정 발생률", "r=-0.022"],
+            ["사업체 수 효과", "OR=1.00"],
         ],
-        margin + 18,
-        top_y + 210,
-        [150, col_w - 186],
-        font_size=12,
+        margin + 12,
+        row_y + 22 * mm,
+        [70 * mm, col_w - 70 * mm - 24],
+        font_size=10,
     )
 
-    card(c, margin + col_w + gap, top_y, col_w, section_h, "2. 물가는 원인이 아니라 정책 신호")
-    image(c, PLOT_DIR / "advanced_01_dual_axis_trend.png", margin + col_w + gap + 16, top_y + 88, col_w - 32, 300)
+    card(c, margin + col_w + col_gap, row_y, col_w, 120 * mm, "2. 물가는 정책 신호", "#FFFFFF")
+    image(c, PLOT_DIR / "advanced_01_dual_axis_trend.png", margin + col_w + col_gap + 8, row_y + 25 * mm, col_w - 16, 62 * mm)
     para(
         c,
-        f"총 CPI 1표준편차 증가 시 핫스팟 오즈는 약 39% 증가 방향을 보였다(OR={odds.loc['CPI_TOTAL', 'OddsRatio']:.2f}, p={odds.loc['CPI_TOTAL', 'P_Value']:.3f}). 5% 유의수준의 확정 인과가 아니라 탐색적 정책 신호로 해석하였다.",
-        margin + col_w + gap + 18,
-        top_y + 410,
-        col_w - 36,
-        48,
-        size=13.5,
-        leading=18,
+        f"총 CPI OR={odds.loc['CPI_TOTAL', 'OddsRatio']:.2f}, p={odds.loc['CPI_TOTAL', 'P_Value']:.3f}. 5% 확정 인과가 아닌 탐색적 정책 신호로 해석한다.",
+        margin + col_w + col_gap + 12,
+        row_y + 88 * mm,
+        col_w - 24,
+        22 * mm,
+        size=10.6,
+        leading=14,
     )
 
-    card(c, margin + 2 * (col_w + gap), top_y, col_w, section_h, "3. 설명 가능한 FSIPI 제안")
-    para(c, "<b>FSIPI = 0.55R + 0.20T + 0.15E + 0.10H</b>", margin + 2 * (col_w + gap) + 18, top_y + 485, col_w - 36, 34, size=22, color="#7C3AED", bold=True)
-    table(
-        c,
-        [
-            ["구성", "의미", "비중"],
-            ["R", "행정처분 발생률", "55%"],
-            ["T", "최근 증가추세", "20%"],
-            ["E", "경제압박", "15%"],
-            ["H", "반복 핫스팟", "10%"],
-        ],
-        margin + 2 * (col_w + gap) + 18,
-        top_y + 260,
-        [60, col_w - 160, 70],
-        font_size=12,
-    )
-    para(
-        c,
-        "기후 조건은 회귀 방향이 불안정하므로 핵심 점수에 직접 넣지 않고 현장 확인용 기후주의 플래그로 분리하였다.",
-        margin + 2 * (col_w + gap) + 18,
-        top_y + 170,
-        col_w - 36,
-        42,
-        size=13.2,
-        leading=17,
-    )
-
-    card(c, margin, bottom_y, col_w, section_h, "4. 로지스틱 회귀 핵심 결과")
-    image(c, PLOT_DIR / "advanced_05_model_forest_plot.png", margin + 16, bottom_y + 62, col_w - 32, 340)
+    card(c, margin + 2 * (col_w + col_gap), row_y, col_w, 120 * mm, "3. 로지스틱 회귀", "#FFFFFF")
+    image(c, PLOT_DIR / "advanced_05_model_forest_plot.png", margin + 2 * (col_w + col_gap) + 8, row_y + 14 * mm, col_w - 16, 80 * mm)
     table(
         c,
         [
             ["변수", "OR", "p"],
             ["총 CPI", f"{odds.loc['CPI_TOTAL', 'OddsRatio']:.2f}", f"{odds.loc['CPI_TOTAL', 'P_Value']:.3f}"],
             ["THI", f"{odds.loc['THI', 'OddsRatio']:.2f}", f"{odds.loc['THI', 'P_Value']:.3f}"],
-            ["음식점 수", f"{odds.loc['RESTAURANT_DENSITY', 'OddsRatio']:.2f}", f"{odds.loc['RESTAURANT_DENSITY', 'P_Value']:.3f}"],
+            ["음식점 수", f"{odds.loc['RESTAURANT_DENSITY', 'OddsRatio']:.2f}", "0.980"],
         ],
-        margin + 18,
-        bottom_y + 420,
-        [125, 75, 75],
-        font_size=11.5,
+        margin + 2 * (col_w + col_gap) + 12,
+        row_y + 86 * mm,
+        [42 * mm, 25 * mm, 25 * mm],
+        font_size=9.3,
     )
 
-    card(c, margin + col_w + gap, bottom_y, col_w, section_h, "5. 점검 우선순위 산출")
-    image(c, PLOT_DIR / "stat_04_priority_index_components.png", margin + col_w + gap + 18, bottom_y + 108, col_w - 36, 330)
-    sens_text = "가중치 민감도: 발생률 중심안 9개, 균형안 8개가 기본안 Top10 후보와 중복"
-    para(c, sens_text, margin + col_w + gap + 18, bottom_y + 50, col_w - 36, 36, size=15, leading=19)
+    # Section 3: FSIPI and conclusion
+    y3 = row_y - 26 * mm
+    label_bar(y3, "분석 활용 전략")
+    bottom_y = y3 - 137 * mm
+    left_w = (width - 2 * margin) * 0.52
+    right_w = width - 2 * margin - left_w - 12 * mm
+    card(c, margin, bottom_y, left_w, 120 * mm, "식품위생 점검 우선순위 지수(FSIPI)", "#FFFFFF")
+    para(c, "<b>FSIPI = 0.55R + 0.20T + 0.15E + 0.10H</b>", margin + 14, bottom_y + 94 * mm, left_w - 28, 18 * mm, size=20, color="#7C3AED", bold=True)
+    image(c, PLOT_DIR / "stat_04_priority_index_components.png", margin + 14, bottom_y + 16 * mm, left_w - 28, 72 * mm)
+    para(c, "민감도 분석: 발생률 중심안 9개, 균형안 8개가 기본안 Top10 후보와 중복되어 순위 안정성을 확인하였다.", margin + 14, bottom_y + 5 * mm, left_w - 28, 10 * mm, size=10.2, color="#374151")
 
-    card(c, margin + 2 * (col_w + gap), bottom_y, col_w, section_h, "6. 결론 및 활용")
+    card(c, margin + left_w + 12 * mm, bottom_y, right_w, 120 * mm, "결론 및 기대효과", "#FFFFFF")
     para(
         c,
-        "<b>결론.</b> 경제적 압박은 식품접객업 행정처분 취약성과 연결될 가능성을 보였다. 식품위생 점검은 절대 위반 건수가 아니라 FSIPI로 정렬한 고위험 시도-월을 중심으로 설계할 필요가 있다.<br/><br/><b>활용.</b> 지자체는 FSIPI 80점 이상을 최우선 현장점검 후보로 검토하고, 단속과 함께 위생교육·시설관리 안내·자가점검 도구 제공을 병행한다.",
-        margin + 2 * (col_w + gap) + 18,
-        bottom_y + 250,
-        col_w - 36,
-        150,
-        size=17,
-        leading=23,
-    )
-    para(
-        c,
-        "자료: 식품안전나라 행정처분, KOSIS 소비자물가지수, 기상청 ASOS, MDIS 전국사업체조사. 행정처분 자료는 실제 위생상태 그 자체가 아니라 행정처분 기반 취약 신호로 해석함.",
-        margin + 2 * (col_w + gap) + 18,
-        bottom_y + 62,
-        col_w - 36,
-        36,
-        size=10,
-        color="#64748B",
-        leading=13,
+        "경제적 압박은 식품접객업 행정처분 취약성과 연결될 가능성을 보였다. 식품위생 점검은 절대 위반 건수가 아니라 FSIPI로 정렬한 고위험 시도-월을 중심으로 설계할 필요가 있다.<br/><br/>FSIPI 80점 이상은 최우선 현장점검 후보로 검토하고, 단속과 함께 위생교육·시설관리 안내·자가점검 도구 제공을 병행한다. 기후 조건은 현장 확인용 주의 플래그로 활용한다.",
+        margin + left_w + 12 * mm + 14,
+        bottom_y + 38 * mm,
+        right_w - 28,
+        68 * mm,
+        size=13.5,
+        leading=18,
     )
 
+    c.setFont(FONT, 8)
+    c.setFillColor(muted)
+    c.drawString(margin, 14 * mm, "자료: 식품안전나라 행정처분, KOSIS 소비자물가지수, 기상청 ASOS, MDIS 전국사업체조사. 행정처분 자료는 실제 위생상태가 아니라 행정처분 기반 취약 신호로 해석함.")
     c.save()
     print(POSTER_PDF)
 
