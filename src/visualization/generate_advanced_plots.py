@@ -33,21 +33,36 @@ def generate_advanced_plots():
     cpi_total = df_x2[df_x2['ITEM'] == 'CPI_TOTAL'][['YEAR_MONTH', 'CPI']].groupby('YEAR_MONTH').mean().reset_index()
     time_df = pd.merge(violation_counts, cpi_total, on='YEAR_MONTH', how='inner')
     
-    fig, ax1 = plt.subplots(figsize=(14, 7))
-    ax1.set_xlabel('기간 (Year-Month)', fontsize=12, color='white')
+    fig, ax1 = plt.subplots(figsize=(14, 7), facecolor='white')
+    ax1.set_facecolor('white')
+    ax1.set_xlabel('기간 (Year-Month)', fontsize=12, color='#111827')
     ax1.set_ylabel('위반 건수 (건)', color='#FF4B4B', fontsize=14, fontweight='bold')
     sns.lineplot(data=time_df, x='YEAR_MONTH', y='COUNT', ax=ax1, color='#FF4B4B', marker='o', linewidth=3, label='적발 건수')
     ax1.tick_params(axis='y', labelcolor='#FF4B4B')
-    ax1.tick_params(axis='x', rotation=45, colors='white')
+    ax1.tick_params(axis='x', rotation=45, colors='#111827')
+    ax1.grid(True, axis='y', color='#E5E7EB', linewidth=0.8)
+    for spine in ax1.spines.values():
+        spine.set_color('#111827')
     
     ax2 = ax1.twinx()
+    ax2.set_facecolor('white')
     ax2.set_ylabel('소비자물가지수 (CPI)', color='#00D4FF', fontsize=14, fontweight='bold')
     sns.lineplot(data=time_df, x='YEAR_MONTH', y='CPI', ax=ax2, color='#00D4FF', marker='s', linewidth=3, linestyle='--', label='물가지수')
     ax2.tick_params(axis='y', labelcolor='#00D4FF')
+    for spine in ax2.spines.values():
+        spine.set_color('#111827')
     
-    plt.title('경제가 흔들리면 위생도 무너진다: 물가 상승과 식품 위반의 동기화 현상', fontsize=18, fontweight='bold', color='white', pad=20)
+    for ax in [ax1, ax2]:
+        legend = ax.get_legend()
+        if legend is not None:
+            legend.get_frame().set_facecolor('white')
+            legend.get_frame().set_edgecolor('#CBD5E1')
+            for text in legend.get_texts():
+                text.set_color('#111827')
+
+    plt.title('경제가 흔들리면 위생도 무너진다: 물가 상승과 식품 위반의 동기화 현상', fontsize=18, fontweight='bold', color='#111827', pad=20)
     fig.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'advanced_01_dual_axis_trend.png'), dpi=300, bbox_inches='tight', transparent=True)
+    plt.savefig(os.path.join(OUTPUT_DIR, 'advanced_01_dual_axis_trend.png'), dpi=300, bbox_inches='tight', facecolor='white', transparent=False)
     plt.close()
 
     # 2. 저장된 실제 모델에서 Feature Importance 생성
