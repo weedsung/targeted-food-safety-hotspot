@@ -517,6 +517,211 @@ def build_a1_poster_pdf():
     print(POSTER_PDF)
 
 
+def build_report_pdf():
+    summary, odds, _, sens = load_stats()
+    c = canvas.Canvas(str(REPORT_PDF), pagesize=A4)
+    width, height = A4
+    mx = 17 * mm
+    top = 15 * mm
+    uw = width - 2 * mx
+
+    def footer(page):
+        c.setFont(FONT, 7)
+        c.setFillColor(colors.HexColor("#64748B"))
+        c.drawRightString(width - mx, 9 * mm, f"{page} / 2")
+
+    def h1(y):
+        c.setFillColor(colors.HexColor("#0F172A"))
+        c.setFont(FONT_BOLD, 15.5)
+        c.drawString(mx, y, "물가가 오르면 동네 식당의 위생도 흔들릴까?")
+        c.setFont(FONT, 8.5)
+        c.setFillColor(colors.HexColor("#475569"))
+        c.drawString(mx, y - 14, "경제·기후·상권 데이터 기반 식품접객업 행정처분 취약 신호 탐지 및 점검 타겟팅 전략")
+
+    def title(text, y):
+        c.setFillColor(colors.HexColor("#0F172A"))
+        c.setFont(FONT_BOLD, 11.2)
+        c.drawString(mx, y, text)
+        c.setStrokeColor(colors.HexColor("#CBD5E1"))
+        c.line(mx, y - 4, width - mx, y - 4)
+
+    # Page 1
+    y = height - top - 10
+    h1(y)
+    y -= 46
+    title("1. 배경", y)
+    y -= 15
+    para(
+        c,
+        "<b>외식업 경영 부담 증가.</b> 식재료비, 인건비, 임대료, 공공요금 상승으로 음식점 운영비 부담이 커지고 있다. 본 연구는 경제적 압박이 커지는 시기에 식품접객업 행정처분 취약 신호도 함께 높아지는지 탐색하였다.",
+        mx,
+        y - 32,
+        uw,
+        32,
+        size=7.8,
+        leading=10.5,
+    )
+    y -= 38
+    para(
+        c,
+        "<b>사후 적발 중심 단속의 한계.</b> 절대 행정처분 건수는 음식점 수가 많은 지역에서 구조적으로 커질 수 있으므로, 식당 1,000개당 행정처분 발생률로 보정하고 시도-월 단위로 비교하였다.",
+        mx,
+        y - 30,
+        uw,
+        30,
+        size=7.8,
+        leading=10.5,
+    )
+    y -= 42
+
+    title("2. 데이터 분석", y)
+    y -= 74
+    table(
+        c,
+        [
+            ["영역", "데이터", "기간", "역할"],
+            ["위생", "식품안전나라 행정처분", "2024.05-2026.04", "행정처분 발생 신호"],
+            ["경제", "KOSIS 소비자물가지수", "2024.01-2026.03", "운영비 압박 신호"],
+            ["기후", "기상청 ASOS", "2024.01-2026.05", "기후주의 플래그"],
+            ["상권", "MDIS 전국사업체조사", "2023", "음식점 수 보정"],
+        ],
+        mx,
+        y,
+        [36, 128, 76, 171],
+        font_size=6.8,
+    )
+    y -= 14
+    para(
+        c,
+        f"전처리 후 식품접객업 행정처분 2,901건을 확보하고, {int(summary['Sidos_Used'])}개 시도 x {int(summary['Months_Used'])}개월 = {int(summary['Rows_Used'])}개 시도-월 관측치를 구성하였다. 핫스팟은 식당 1,000개당 행정처분 발생률 상위 20%로 정의하였다.",
+        mx,
+        y - 25,
+        uw,
+        25,
+        size=7.5,
+        leading=10,
+    )
+    y -= 36
+
+    table(
+        c,
+        [
+            ["단계", "처리 내용", "산출물"],
+            ["1", "행정처분 필터링·시도명 정제", "2,901건"],
+            ["2", "기상·경제·상권 자료 결합", "시도-월 마트"],
+            ["3", "보정 발생률 및 Top 20% 산출", "핫스팟 후보"],
+            ["4", "상관·회귀·민감도 분석", "통계 결과·FSIPI"],
+        ],
+        mx,
+        y - 68,
+        [35, 225, 151],
+        font_size=6.8,
+    )
+    y -= 92
+
+    title("그림 요약", y)
+    y -= 130
+    img_w = (uw - 8 * mm) / 2
+    image(c, PLOT_DIR / "advanced_01_dual_axis_trend.png", mx, y, img_w, 82)
+    image(c, PLOT_DIR / "advanced_05_model_forest_plot.png", mx + img_w + 8 * mm, y, img_w, 82)
+    para(c, "그림-1. 물가와 행정처분 추이", mx, y - 16, img_w, 14, size=6.8, color="#374151")
+    para(c, "그림-2. 로지스틱 회귀 오즈비", mx + img_w + 8 * mm, y - 16, img_w, 14, size=6.8, color="#374151")
+    footer(1)
+    c.showPage()
+
+    # Page 2
+    y = height - top - 24
+    title("2. 데이터 분석 - 결과 및 해석", y)
+    y -= 96
+    table(
+        c,
+        [
+            ["항목", "수치", "해석"],
+            ["사업체 수 vs 절대 건수", "r=0.422", "대도시 규모 효과"],
+            ["사업체 수 vs 보정 발생률", "r=-0.022", "보정 후 관계 거의 없음"],
+            ["총 CPI", f"OR={odds.loc['CPI_TOTAL', 'OddsRatio']:.2f}, p={odds.loc['CPI_TOTAL', 'P_Value']:.3f}", "탐색적 정책 신호"],
+            ["LightGBM", f"AUC={summary['LightGBM_AUC']:.3f}", "핵심 예측 주장 제외"],
+        ],
+        mx,
+        y,
+        [120, 95, 196],
+        font_size=7.1,
+    )
+    y -= 24
+    para(
+        c,
+        "총 CPI 1표준편차 증가 시 핫스팟 오즈는 약 39% 증가 방향을 보였으나, 5% 유의수준의 확정 인과가 아니라 행정처분 취약성의 탐색적 정책 신호로 해석하였다.",
+        mx,
+        y - 30,
+        uw,
+        30,
+        size=7.6,
+        leading=10,
+    )
+    y -= 44
+
+    title("3. 분석 활용 전략", y)
+    y -= 24
+    para(c, "<b>FSIPI = 0.55R + 0.20T + 0.15E + 0.10H</b>", mx, y - 18, uw, 18, size=11, color="#7C3AED", bold=True)
+    y -= 116
+    table(
+        c,
+        [
+            ["구성", "의미", "가중치"],
+            ["R", "음식점 1,000개당 행정처분 발생률", "55%"],
+            ["T", "최근 3개월 대비 증가추세", "20%"],
+            ["E", "소비자물가 기반 경제압박", "15%"],
+            ["H", "최근 3개월 반복 핫스팟", "10%"],
+        ],
+        mx,
+        y,
+        [40, 288, 83],
+        font_size=7.0,
+    )
+    y -= 115
+    image(c, PLOT_DIR / "stat_04_priority_index_components.png", mx, y, img_w, 90)
+    image(c, PLOT_DIR / "stat_01_correlation_summary.png", mx + img_w + 8 * mm, y, img_w, 90)
+    para(c, "그림-3. FSIPI 산출 구조", mx, y - 16, img_w, 14, size=6.8, color="#374151")
+    para(c, "그림-4. 상관분석 요약", mx + img_w + 8 * mm, y - 16, img_w, 14, size=6.8, color="#374151")
+    y -= 42
+    para(
+        c,
+        "가중치 민감도 분석에서 발생률 중심안은 기본안 Top10 후보 중 9개, 균형안은 8개를 유지하였다. THI는 회귀 방향이 불안정해 핵심 점수에 직접 넣지 않고 기후주의 플래그로 분리하였다.",
+        mx,
+        y - 30,
+        uw,
+        30,
+        size=7.4,
+        leading=9.8,
+    )
+    y -= 48
+    title("결론", y)
+    y -= 14
+    para(
+        c,
+        "식품위생 점검은 절대 위반 건수가 아니라 FSIPI로 정렬한 고위험 시도-월을 중심으로 설계할 필요가 있다. FSIPI 80점 이상은 최우선 현장점검 후보로 검토하고, 단속과 위생교육·시설관리 안내·자가점검 도구 제공을 병행한다.",
+        mx,
+        y - 32,
+        uw,
+        32,
+        size=7.6,
+        leading=10,
+    )
+    y -= 45
+    title("참고문헌", y)
+    refs = (
+        "식품의약품안전처(2026). 식품위생 행정처분 공개자료. 식품안전나라. "
+        "통계청(2026). 소비자물가지수. KOSIS 국가통계포털. "
+        "기상청(2026). 종관기상관측(ASOS) 일별 관측자료. 기상자료개방포털. "
+        "통계청(2023). 전국사업체조사 마이크로데이터. MDIS. "
+        "Hosmer et al. (2013). Applied Logistic Regression. Wiley."
+    )
+    para(c, refs, mx, y - 26, uw, 24, size=5.8, color="#374151", leading=7.4)
+    footer(2)
+    c.save()
+    print(REPORT_PDF)
+
+
 if __name__ == "__main__":
     build_report_pdf()
     build_a1_poster_pdf()
