@@ -1,0 +1,4 @@
+﻿Weight_Set,Rate_Weight,Trend_Weight,Economy_Weight,Repeat_Weight,Top10_Overlap_With_Base,Top10_Overlap_Ratio
+기본안_55_20_15_10,0.55,0.2,0.15,0.1,10,1.0
+발생률중심안_70_15_10_5,0.7,0.15,0.1,0.05,9,0.9
+균형안_45_25_20_10,0.45,0.25,0.2,0.1,8,0.8

@@ -158,27 +158,29 @@ def save_priority_index_components(priority):
 
     ax0 = fig.add_subplot(gs[0, 0])
     weights = pd.DataFrame({
-        'Component': ['행정처분 발생률', '총 CPI', '기후부담(THI)'],
-        'Weight': [70, 20, 10],
+        'Component': ['발생률', '증가추세', '경제압박', '반복핫스팟'],
+        'Weight': [55, 20, 15, 10],
     })
-    ax0.bar(weights['Component'], weights['Weight'], color=['#DC2626', '#F59E0B', '#2563EB'])
-    ax0.set_ylim(0, 80)
+    ax0.bar(weights['Component'], weights['Weight'], color=['#DC2626', '#F97316', '#F59E0B', '#2563EB'])
+    ax0.set_ylim(0, 65)
     ax0.set_ylabel('가중치(%)')
-    ax0.set_title('우선순위 지수 산출식', fontsize=13, fontweight='bold')
+    ax0.set_title('FSIPI 산출 공식', fontsize=13, fontweight='bold')
     ax0.tick_params(axis='x', rotation=20)
     for i, row in weights.iterrows():
         ax0.text(i, row['Weight'] + 2, f"{row['Weight']}%", ha='center', fontweight='bold')
 
     ax1 = fig.add_subplot(gs[0, 1])
-    ax1.barh(top['Label'], top['INSPECTION_PRIORITY_SCORE'], color='#7C3AED', alpha=0.85)
+    colors = np.where(top['CLIMATE_CAUTION_FLAG'] == 1, '#DC2626', '#2563EB')
+    ax1.barh(top['Label'], top['FSIPI'], color=colors, alpha=0.85)
     ax1.invert_yaxis()
-    ax1.set_xlabel('점검 우선순위 점수')
+    ax1.set_xlabel('FSIPI 점수')
     ax1.set_title('상위 점검 후보 시도-월', fontsize=13, fontweight='bold')
     ax1.grid(axis='x', alpha=0.25)
-    for y, value in enumerate(top['INSPECTION_PRIORITY_SCORE']):
-        ax1.text(value + 0.6, y, f"{value:.1f}", va='center', fontsize=8.5)
+    for y, (_, row) in enumerate(top.iterrows()):
+        flag = ' 기후주의' if row['CLIMATE_CAUTION_FLAG'] == 1 else ''
+        ax1.text(row['FSIPI'] + 0.6, y, f"{row['FSIPI']:.1f}{flag}", va='center', fontsize=8.5)
 
-    fig.suptitle('설명 가능한 점검 우선순위 지수: 예측모형보다 운영형 정렬 지표로 활용', fontsize=15, fontweight='bold')
+    fig.suptitle('식품위생 점검 우선순위 지수(FSIPI): 예측모형이 아닌 운영형 정렬 지표', fontsize=15, fontweight='bold')
     plt.tight_layout()
     plt.savefig(os.path.join(OUTPUT_DIR, 'stat_04_priority_index_components.png'), dpi=300, bbox_inches='tight')
     plt.close()
